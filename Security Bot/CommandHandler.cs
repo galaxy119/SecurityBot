@@ -9,11 +9,13 @@ namespace Security_Bot
 	{
 		private readonly DiscordSocketClient _client;
 		private readonly CommandService _commands;
+		private readonly Program prog;
 
-		public CommandHandler(DiscordSocketClient client, CommandService commands)
+		public CommandHandler(DiscordSocketClient client, CommandService commands, Program program)
 		{
 			_commands = commands;
 			_client = client;
+			prog = program;
 		}
 
 		public async Task InstallCommandsAsync()
@@ -36,7 +38,7 @@ namespace Security_Bot
 			SocketGuildUser sender = (SocketGuildUser)message.Author;
 			bool isAllowed = false;
 			foreach (SocketRole role in sender.Roles)
-				if (role.Id == 1234567890 || role.Id == 1234567890)
+				if (prog.AllowedRoles.Contains(role.Id.ToString()) || prog.AllowedUsers.Contains(sender.Id.ToString()))
 					isAllowed = true;
 
 			if (!isAllowed) return;

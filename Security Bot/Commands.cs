@@ -20,12 +20,13 @@ namespace Security_Bot
 
 	public class BanModule : ModuleBase<SocketCommandContext>
 	{
-		private readonly Rest rest = new Rest();
-
+		private readonly Program prog;
+		public BanModule(Program program) => prog = program;
+		
 		[Command("ban"), Summary("Bans someone. hehexd")]
 		public async Task BanAsync(string steamid, string link, string reason)
 		{
-			string response = await rest.RestPost(steamid, link, reason);
+			string response = await prog.RestClient.RestPost(steamid, link, reason);
 			await ReplyAsync(response);
 		}
 	}

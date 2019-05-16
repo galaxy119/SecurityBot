@@ -10,6 +10,10 @@
       <PackageReference Include="Discord.Net" Version="2.0.1" />
       <PackageReference Include="RestSharp" Version="106.6.9" />
     </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Methods.cs" />
+    </ItemGroup>
     <PropertyGroup>
         <PublishWithAspNetCoreTargetManifest>false</PublishWithAspNetCoreTargetManifest>
     </PropertyGroup>
