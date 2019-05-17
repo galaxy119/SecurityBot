@@ -85,6 +85,36 @@ namespace Security_Bot
 				await context.Channel.SendMessageAsync("pong!");
 				Console.WriteLine("handling pong");
 			}
+			
+			if (context.Message.Content.ToLower().StartsWith(program.Config.BotPrefix + "warninfo") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.Config.ReportRoleId))
+			{
+				await WarnSystem.DoGetInfoCommand(context);
+				Console.WriteLine("handling warn");
+				return;
+			}
+			
+			if (context.Message.Content.ToLower().StartsWith(program.Config.BotPrefix + "warnreason") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.Config.ReportRoleId))
+			{
+				await WarnSystem.DoReasonCmd(context, program);
+				Console.WriteLine("handling warn");
+				return;
+			}
+
+			if (context.Message.Content.ToLower().StartsWith(program.Config.BotPrefix + "warn") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.Config.ReportRoleId))
+			{
+				await WarnSystem.DoDiscordWarnCommand(context, program);
+				Console.WriteLine("handling warn");
+			}
+			
+			if (context.Message.Content.ToLower().StartsWith(program.Config.BotPrefix + "unwarn") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.Config.ReportRoleId))
+			{
+				await WarnSystem.DoUnWarnCommand(context);
+				Console.WriteLine("handling warn");
+			}
 		}
 
 		private async Task DoReportCommand(ICommandContext context)
