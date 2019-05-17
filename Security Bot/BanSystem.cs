@@ -151,13 +151,9 @@ namespace Security_Bot
                 {
                     return TimeSpan.MinValue;
                 }
-               
-                
                 span += fromChar(type, result);
             }
-           
                 return span;
-          
         }
 
 
