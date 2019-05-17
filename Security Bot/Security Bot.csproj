@@ -2,8 +2,9 @@
 
     <PropertyGroup>
         <OutputType>Exe</OutputType>
-        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <TargetFramework>netcoreapp2.1</TargetFramework>
         <RootNamespace>Security_Bot</RootNamespace>
+        <LangVersion>7.3</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>

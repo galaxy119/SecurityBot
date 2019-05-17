@@ -6,73 +6,79 @@ using Discord.Commands;
 using Discord.WebSocket;
 using System.IO;
 using System.Linq;
+using Newtonsoft.Json;
 
 namespace Security_Bot
 {
-    public class Program
-    {
-        private string DiscordToken { get; set; }
-        private DiscordSocketClient client;
-        public Rest RestClient { get; private set; }
-        public string ApiKey { get; private set; }
-        public List<string> AllowedRoles = new List<string>();
-        public List<string> AllowedUsers = new List<string>();
+	public class Program
+	{
+		public DiscordSocketClient _client;
+		public readonly Bot bot;
+		public const string kCfgFile = "SecBotConfig.json";
+		public static ReportHandler reportHandler;
 
-        public static void Main(string[] args) => new Program().MainAsync().GetAwaiter().GetResult();
+		public Config config
+		{
+			get
+			{
+				if (_config == null)
+					_config = GetConfig();
+				return _config;
+			}
+		}
 
-        private async Task MainAsync()
-        {
-            string path = Directory.GetCurrentDirectory() + "/SecBot.cfg";
+		private Config _config = null;
+		public static void Main(string[] args)
+		{
+			new Program();
+		}
 
-            if (!File.Exists(path))
-            {
-                StreamWriter writer = new StreamWriter(path);
-                File.CreateText(path);
-                writer.WriteLine("api_key: ");
-                writer.WriteLine("discord_token: ");
-                writer.WriteLine("allowed_role_ids: ");
-                writer.WriteLine("allowed_user_ids: ");
-            }
+		public Program()
+		{
+			reportHandler = new ReportHandler(this);
+			bot = new Bot(this);
+		}
 
-            string[] lines = File.ReadAllLines(path);
+		public static Task Log(LogMessage msg)
+		{
+			Console.WriteLine(msg.ToString());
+			return Task.CompletedTask;
+		}
 
-            foreach (string line in lines)
-            {
-                string[] kvp = System.Text.RegularExpressions.Regex.Split(line, ": ");
-                switch (kvp[0].ToLower())
-                {
-                    case "api_key":
-                        ApiKey = kvp[1];
-                        break;
-                    case "discord_token":
-                        DiscordToken = kvp[1];
-                        break;
-                    case "allowed_role_ids":
-                        AllowedRoles = kvp[1].Split(',').ToList();
-                        break;
-                    case "allowed_user_ids":
-                        AllowedUsers = kvp[1].Split(',').ToList();
-                        break;
-                }
-            }
+		public static Task<Config> GetConfigAsync()
+		{
+			if (!File.Exists(kCfgFile))
+			{
+				File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
+				return Task.FromResult(Config.Default);
+			}
+			return Task.FromResult(JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile)));
+		}
 
-            client = new DiscordSocketClient();
-            client.Log += Log;
-            CommandHandler commands = new CommandHandler(client, new CommandService(), this);
+		public static Config GetConfig()
+		{
+			if (!File.Exists(kCfgFile))
+			{
+				File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
+				return Config.Default;
+			}
+			return JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile));
+		}
+	}
 
-            await commands.InstallCommandsAsync();
-            RestClient = new Rest(this);
+	public class Config
+	{
+		public string BotPrefix { get; set; }
+		public string BotToken { get; set; }
+		public ulong ReportRoleID { get; set; }
+		public string ReportKey { get; set; }
 
-            await client.LoginAsync(TokenType.Bot, DiscordToken);
-            await client.StartAsync();
-
-            await Task.Delay(-1);
-        }
-
-        private static Task Log(LogMessage msg)
-        {
-            Console.WriteLine(msg.ToString());
-            return Task.CompletedTask;
-        }
-    }
+		public static readonly Config Default = new Config()
+		{
+			BotToken = "",
+			BotPrefix = "~",
+			ReportRoleID = 0,
+			ReportKey = ""
+		};
+	}
 }
