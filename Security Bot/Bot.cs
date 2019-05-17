@@ -54,6 +54,14 @@ namespace Security_Bot
 			{
 				await DoReportCommand(context);
 				Console.WriteLine("handling report");
+				return;
+			}
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
+			{
+				await BanSystem.DoGetInfoCommand(context);
+				Console.WriteLine("handling baninfo");
+				return;
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") &&
@@ -61,6 +69,7 @@ namespace Security_Bot
 			{
 				await BanSystem.DoDiscordBanCommand(context);
 				Console.WriteLine("handling ban");
+				return;
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") &&
@@ -68,13 +77,7 @@ namespace Security_Bot
 			{
 				await BanSystem.DoReasonCmd(context, program);
 				Console.WriteLine("handling reason");
-			}
-
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
-			{
-				await BanSystem.DoGetInfoCommand(context);
-				Console.WriteLine("handling baninfo");
+				return;
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "unban") &&
@@ -82,6 +85,7 @@ namespace Security_Bot
 			{
 				await BanSystem.DoUnbanCmd(context);
 				Console.WriteLine("handling unban");
+				return;
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ping"))
