@@ -11,27 +11,21 @@ namespace Security_Bot
 {
 	public class BanSystem
 	{
-		public static WebClient webClient;
+		private static WebClient _webClient;
 
 		public static async Task DoDiscordBanCommand(CommandContext context)
 		{
 			TimeSpan span;
-			var args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
+			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			// await context.Channel.SendMessageAsync(Convert.ToString(args.Length));
 			if (args.Length < 2) return;
 			if (args[1].Length != 17 || !long.TryParse(args[1], out long l)) return;
 			if (args[2].ToUpper() == "PERM")
-			{
 				span = TimeSpan.FromDays(18250);
-			}
 			else
 			{
 				string humanReadableDuration = "";
-				string toParse = "";
-				foreach (string s in args.Where(p => p != args[1] && p != args[0]))
-				{
-					toParse = toParse + " " + s;
-				}
+				string toParse = args.Where(p => p != args[1] && p != args[0]).Aggregate("", (current, s) => current + " " + s);
 
 				span = ParseBanDuration(toParse, ref humanReadableDuration);
 				if (span.Ticks <= 0)
@@ -66,11 +60,9 @@ namespace Security_Bot
 			coll.Add("Discord", "Discord");
 			//await context.Channel.SendMessageAsync("asdasdasd");
 			string apikey = "4C3DD54D9D92C18291F05FF2F59639A4";
-			await downloadwebClient(out string result,
-				"https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=" + apikey + "&steamids=" +
-				args[1]);
-			var players = JsonConvert.DeserializeObject<RootObject>(result);
-			var player = players.response.players.FirstOrDefault();
+			await DownloadwebClient(out string result, "https://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=" + apikey + "&steamids=" + args[1]);
+			RootObject players = JsonConvert.DeserializeObject<RootObject>(result);
+			Player player = players.response.players.FirstOrDefault();
 			if (player == null)
 			{
 				await context.Channel.SendMessageAsync("ERROR Player is null.");
@@ -78,39 +70,45 @@ namespace Security_Bot
 			}
 
 			coll.Add("username", player.personaname);
-			await upload(coll, out string response, "http://joker.hivehosted.com/Bans/BanLogs.php");
+			await Upload(coll, out string response, "http://joker.hivehosted.com/Bans/BanLogs.php");
 			await context.Channel.SendMessageAsync(response);
 		}
 
-		public static Task downloadwebClient(out string result, string url)
+		private static Task DownloadwebClient(out string result, string url)
 		{
-			result = webClient.DownloadString(url);
+			Console.WriteLine("client download");
+			result = _webClient.DownloadString(url);
+			Console.WriteLine("Downloaded");
 			return Task.FromResult(1);
 		}
 
 		public static async Task DoGetInfoCommand(CommandContext context)
 		{
-			var args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
+			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length != 2) return;
 			if (!long.TryParse(args[1], out long steamid64) || args[1].Length != 17) return;
-			NameValueCollection collection = new NameValueCollection();
-			collection.Add("apikey", "vyJCxUBi9D785DuXxAVoDuD1llZ5jPO4T4YdvfLYNk2Qe2wyHNZVZOJoQ5rXTE97");
-			collection.Add("steamid64", args[1]);
-			if (webClient == null) webClient = new WebClient();
-			await upload(collection, out string response, "http://joker.hivehosted.com/Bans/GetBanInfo.php");
+			NameValueCollection collection = new NameValueCollection
+			{
+				{ "apikey", "vyJCxUBi9D785DuXxAVoDuD1llZ5jPO4T4YdvfLYNk2Qe2wyHNZVZOJoQ5rXTE97" },
+				{ "steamid64", args[1] }
+			};
+			if (_webClient == null) _webClient = new WebClient();
+			await Upload(collection, out string response, "http://joker.hivehosted.com/Bans/GetBanInfo.php");
 			await context.Channel.SendMessageAsync(response);
 		}
 
 		public static async Task DoUnbanCmd(CommandContext context)
 		{
-			var args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
+			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length != 2) return;
 			if (!long.TryParse(args[1], out long steamid64) || args[1].Length != 17) return;
-			NameValueCollection collection = new NameValueCollection();
-			collection.Add("apikey", "Ntba7mQeAyKRsoZs6qe85t37npzsyLUNPaUc6CRzKcNWgKUp470ja91DX7wioIUH");
-			collection.Add("steamid64", args[1]);
-			if (webClient == null) webClient = new WebClient();
-			await upload(collection, out string response, "http://joker.hivehosted.com/Bans/RevokeBan.php");
+			NameValueCollection collection = new NameValueCollection
+			{
+				{ "apikey", "Ntba7mQeAyKRsoZs6qe85t37npzsyLUNPaUc6CRzKcNWgKUp470ja91DX7wioIUH" },
+				{ "steamid64", args[1] }
+			};
+			if (_webClient == null) _webClient = new WebClient();
+			await Upload(collection, out string response, "http://joker.hivehosted.com/Bans/RevokeBan.php");
 			await context.Channel.SendMessageAsync(response);
 		}
 
@@ -119,15 +117,11 @@ namespace Security_Bot
 			//if (context.Channel.Id != ulong.Parse("536784180999356416")) return;
 			//if (!context.Message.Content.ToLower().StartsWith(")reason")) return;
 
-			var args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
+			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length <= 2) return;
-			var steamid = args[1];
+			string steamid = args[1];
 			if (!ulong.TryParse(steamid, out ulong steamid64ulong) || steamid.Length != 17) return;
-			var reason = "";
-			foreach (string str in args.Where(p => ((p != program.config.BotPrefix + "reason") && (p != steamid))))
-			{
-				reason = reason + str + " ";
-			}
+			string reason = args.Where(p => ((p != program.Config.BotPrefix + "reason") && (p != steamid))).Aggregate("", (current, str) => current + str + " ");
 
 			Console.WriteLine(reason);
 			NameValueCollection col = new NameValueCollection
@@ -136,15 +130,15 @@ namespace Security_Bot
 				{"reason", reason},
 				{"steamid64", steamid}
 			};
-			if (webClient == null) webClient = new WebClient();
-			await upload(col, out string response, "http://joker.hivehosted.com/Bans/UpdateReason.php");
+			if (_webClient == null) _webClient = new WebClient();
+			await Upload(col, out string response, "http://joker.hivehosted.com/Bans/UpdateReason.php");
 			await context.Channel.SendMessageAsync(response);
 		}
 
-		public static Task upload(NameValueCollection col, out string response, string url)
+		private static Task Upload(NameValueCollection col, out string response, string url)
 		{
-			if (webClient == null) webClient = new WebClient();
-			var byteresponse = webClient.UploadValues(url, col);
+			if (_webClient == null) _webClient = new WebClient();
+			byte[] byteresponse = _webClient.UploadValues(url, col);
 			response = Encoding.Default.GetString(byteresponse);
 			return Task.FromResult(1);
 		}
@@ -155,18 +149,14 @@ namespace Security_Bot
 			TimeSpan span = new TimeSpan();
 			foreach (string s in parts)
 			{
-				string digits = new string(s.ToCharArray().Where(ch => Char.IsDigit(ch)).ToArray());
-				if (!int.TryParse(digits, out int result))
-				{
+				string digits = new string(s.ToCharArray().Where(char.IsDigit).ToArray());
+				if (!int.TryParse(digits, out int result)) 
 					return TimeSpan.MinValue;
-				}
 
-				char type = s.ToCharArray().Where(ch => Char.IsLetter(ch)).FirstOrDefault();
+				char type = s.ToCharArray().FirstOrDefault(char.IsLetter);
 				Console.WriteLine(type + "  " + digits);
-				if (type == default(char))
-				{
+				if (type == default(char)) 
 					return TimeSpan.MinValue;
-				}
 
 				span += fromChar(type, result);
 			}

@@ -10,9 +10,9 @@ namespace Security_Bot
 {
 	public class ReportHandler
 	{
-		private Program program;
-		private WebClient client;
-		public const string kReportURL = "https://titnoas.xyz/PepeSmug/reportcheatertest.php";
+		private readonly Program program;
+		private readonly WebClient client;
+		private const string kReportURL = "https://staff.scpslgame.com/api/rest/reportcheater.php";
 
 		public ReportHandler(Program program)
 		{
@@ -20,15 +20,16 @@ namespace Security_Bot
 			client = new WebClient();
 		}
 
-		public async Task<CheaterReportResponse> ReportCheater(string SteamID64, string reason, string proof)
+		public async Task<string> ReportCheater(string steamId64, string proof, string reason)
 		{
 			NameValueCollection collection = new NameValueCollection();
-			collection.Add("serverhostkey", program.config.ReportKey);
+			collection.Add("serverhostkey", program.Config.ReportKey);
 			collection.Add("cheatdescription", reason);
 			collection.Add("serverhostprooflink", proof);
-			collection.Add("serverhoststeamid", SteamID64);
+			collection.Add("serverhoststeamid", steamId64);
 			byte[] response = await client.UploadValuesTaskAsync(kReportURL, collection);
-			return JsonConvert.DeserializeObject<CheaterReportResponse>(Encoding.UTF8.GetString(response));
+			
+			return JsonConvert.DeserializeObject<CheaterReportResponse>(Encoding.UTF8.GetString(response)).message;
 		}
 	}
 

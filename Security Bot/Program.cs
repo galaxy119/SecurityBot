@@ -12,29 +12,21 @@ namespace Security_Bot
 {
 	public class Program
 	{
-		public readonly Bot bot;
-		public const string kCfgFile = "SecBotConfig.json";
-		public static ReportHandler reportHandler;
+		private readonly Bot bot;
+		private const string kCfgFile = "SecBotConfig.json";
+		public ReportHandler ReportHandler;
 
-		public Config config
-		{
-			get
-			{
-				if (_config == null)
-					_config = GetConfig();
-				return _config;
-			}
-		}
+		public Config Config => config ?? (config = GetConfig());
 
-		private Config _config = null;
-		public static void Main(string[] args)
+		private Config config;
+		public static void Main()
 		{
 			new Program();
 		}
 
-		public Program()
+		private Program()
 		{
-			reportHandler = new ReportHandler(this);
+			ReportHandler = new ReportHandler(this);
 			bot = new Bot(this);
 		}
 
@@ -46,22 +38,19 @@ namespace Security_Bot
 
 		public static Task<Config> GetConfigAsync()
 		{
-			if (!File.Exists(kCfgFile))
-			{
-				File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
-				return Task.FromResult(Config.Default);
-			}
-			return Task.FromResult(JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile)));
+			if (File.Exists(kCfgFile))
+				return Task.FromResult(JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile)));
+			
+			File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
+			return Task.FromResult(Config.Default);
 		}
 
-		public static Config GetConfig()
+		private static Config GetConfig()
 		{
-			if (!File.Exists(kCfgFile))
-			{
-				File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
-				return Config.Default;
-			}
-			return JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile));
+			if (File.Exists(kCfgFile)) 
+				return JsonConvert.DeserializeObject<Config>(File.ReadAllText(kCfgFile));
+			File.WriteAllText(kCfgFile, JsonConvert.SerializeObject(Config.Default, Formatting.Indented));
+			return Config.Default;
 		}
 	}
 
@@ -69,14 +58,14 @@ namespace Security_Bot
 	{
 		public string BotPrefix { get; set; }
 		public string BotToken { get; set; }
-		public ulong ReportRoleID { get; set; }
+		public ulong ReportRoleId { get; set; }
 		public string ReportKey { get; set; }
 
-		public static readonly Config Default = new Config()
+		public static readonly Config Default = new Config
 		{
 			BotToken = "",
 			BotPrefix = "~",
-			ReportRoleID = 0,
+			ReportRoleId = 0,
 			ReportKey = ""
 		};
 	}
