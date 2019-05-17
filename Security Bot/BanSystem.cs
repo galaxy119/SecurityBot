@@ -81,9 +81,13 @@ namespace Security_Bot
 
 		private static Task DownloadwebClient(out string result, string url)
 		{
-			Console.WriteLine("client download");
-			result = _webClient.DownloadString(url);
-			Console.WriteLine("Downloaded");
+			using (var webClient = new WebClient())
+			{
+				webClient.Headers[HttpRequestHeader.UserAgent] = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
+				Console.WriteLine("client download");
+				result = webClient.DownloadString(url);
+				Console.WriteLine("Downloaded");
+			}
 			return Task.FromResult(1);
 		}
 
