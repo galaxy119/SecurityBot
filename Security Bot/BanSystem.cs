@@ -117,7 +117,7 @@ namespace Security_Bot
 		public static async Task DoReasonCmd(CommandContext context)
 		{
 			//if (context.Channel.Id != ulong.Parse("536784180999356416")) return;
-			if (!context.Message.Content.ToLower().StartsWith(")reason")) return;
+			//if (!context.Message.Content.ToLower().StartsWith(")reason")) return;
 
 			var args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length <= 2) return;
