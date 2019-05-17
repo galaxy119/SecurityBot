@@ -50,40 +50,35 @@ namespace Security_Bot
 		public async Task HandleCommands(CommandContext context)
 		{
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "report") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
 			{
 				await DoReportCommand(context);
 				Console.WriteLine("handling report");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
+			    ((context.Message.Author as IGuildUser).RoleIds.Any(p => p == program.config.ReportRoleID)))
 			{
 				await BanSystem.DoDiscordBanCommand(context);
 				Console.WriteLine("handling ban");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
 			{
 				await BanSystem.DoReasonCmd(context);
 				Console.WriteLine("handling reason");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
 			{
 				await BanSystem.DoGetInfoCommand(context);
 				Console.WriteLine("handling baninfo");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "unban") &&
-			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
 			{
 				await BanSystem.DoUnbanCmd(context);
 				Console.WriteLine("handling unban");
