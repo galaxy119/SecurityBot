@@ -47,7 +47,7 @@ namespace Security_Bot
 
 		public async Task HandleCommands(CommandContext context)
 		{
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") && ((IGuildUser) context.Message.Author).RoleIds.Contains(program.config.ReportRoleID))
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				
 			}

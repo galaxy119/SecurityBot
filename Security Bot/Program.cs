@@ -69,14 +69,14 @@ namespace Security_Bot
 	{
 		public string BotPrefix { get; set; }
 		public string BotToken { get; set; }
-		public ulong ReportRoleID { get; set; }
+		public string ReportRoleIDs { get; set; }
 		public string ReportKey { get; set; }
 
 		public static readonly Config Default = new Config()
 		{
 			BotToken = "",
 			BotPrefix = "~",
-			ReportRoleID = 0,
+			ReportRoleIDs = "",
 			ReportKey = ""
 		};
 	}
