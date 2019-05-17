@@ -51,37 +51,48 @@ namespace Security_Bot
 		{
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "report") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(p.ToString())))
+				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
 			{
-				DoReportCommand(context);
+				await DoReportCommand(context);
+				Console.WriteLine("handling report");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(p.ToString())))
+				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
 			{
-				BanSystem.DoDiscordBanCommand(context);
+				await BanSystem.DoDiscordBanCommand(context);
+				Console.WriteLine("handling ban");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(p.ToString())))
+				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
 			{
-				BanSystem.DoReasonCmd(context);
+				await BanSystem.DoReasonCmd(context);
+				Console.WriteLine("handling reason");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(p.ToString())))
+				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
 			{
-				BanSystem.DoGetInfoCommand(context);
+				await BanSystem.DoGetInfoCommand(context);
+				Console.WriteLine("handling baninfo");
 			}
 
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "unban") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
-				    program.config.ReportRoleIDs.Contains(p.ToString())))
+				    program.config.ReportRoleIDs.Contains(Convert.ToString(p))))
 			{
-				BanSystem.DoUnbanCmd(context);
+				await BanSystem.DoUnbanCmd(context);
+				Console.WriteLine("handling unban");
+			}
+
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ping"))
+			{
+				await context.Channel.SendMessageAsync("pong!");
+				Console.WriteLine("handling pong");
 			}
 		}
 
