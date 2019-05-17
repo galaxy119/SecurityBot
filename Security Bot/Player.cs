@@ -29,3 +29,4 @@ namespace Security_Bot
 	{
 		public Response response { get; set; }
 	}
+}

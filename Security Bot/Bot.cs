@@ -14,11 +14,12 @@ namespace Security_Bot
 		{
 			get
 			{
-				if(_client == null)
+				if (_client == null)
 					_client = new DiscordSocketClient();
-				return _client; 
+				return _client;
 			}
 		}
+
 		private DiscordSocketClient _client;
 		public readonly Program program;
 
@@ -41,30 +42,44 @@ namespace Security_Bot
 		{
 			if (message.Content.StartsWith(program.config.BotPrefix))
 			{
-				CommandContext context = new CommandContext(client, (IUserMessage)message);
+				CommandContext context = new CommandContext(client, (IUserMessage) message);
 				HandleCommands(context);
 			}
 		}
 
 		public async Task HandleCommands(CommandContext context)
 		{
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "report") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "report") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
+				    program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				DoReportCommand(context);
 			}
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
+
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "ban") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
+				    program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				BanSystem.DoDiscordBanCommand(context);
 			}
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
+
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
+				    program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				BanSystem.DoReasonCmd(context);
 			}
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
+
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "baninfo") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
+				    program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				BanSystem.DoGetInfoCommand(context);
 			}
-			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "unban") && ((IGuildUser) context.Message.Author).RoleIds.Any(p => program.config.ReportRoleIDs.Contains(p.ToString())))
+
+			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "unban") &&
+			    ((IGuildUser) context.Message.Author).RoleIds.Any(p =>
+				    program.config.ReportRoleIDs.Contains(p.ToString())))
 			{
 				BanSystem.DoUnbanCmd(context);
 			}
