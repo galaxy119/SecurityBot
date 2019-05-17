@@ -66,7 +66,7 @@ namespace Security_Bot
 			if (context.Message.Content.ToLower().StartsWith(program.config.BotPrefix + "reason") &&
 			    ((IGuildUser) context.Message.Author).RoleIds.Any(p => p == program.config.ReportRoleID))
 			{
-				await BanSystem.DoReasonCmd(context);
+				await BanSystem.DoReasonCmd(context, program);
 				Console.WriteLine("handling reason");
 			}
 

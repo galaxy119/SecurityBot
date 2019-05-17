@@ -114,7 +114,7 @@ namespace Security_Bot
 			await context.Channel.SendMessageAsync(response);
 		}
 
-		public static async Task DoReasonCmd(CommandContext context)
+		public static async Task DoReasonCmd(CommandContext context, Program program)
 		{
 			//if (context.Channel.Id != ulong.Parse("536784180999356416")) return;
 			//if (!context.Message.Content.ToLower().StartsWith(")reason")) return;
@@ -124,7 +124,7 @@ namespace Security_Bot
 			var steamid = args[1];
 			if (!ulong.TryParse(steamid, out ulong steamid64ulong) || steamid.Length != 17) return;
 			var reason = "";
-			foreach (string str in args.Where(p => ((p != ")reason") && (p != steamid))))
+			foreach (string str in args.Where(p => ((p != program.config.BotPrefix + "reason") && (p != steamid))))
 			{
 				reason = reason + str + " ";
 			}
