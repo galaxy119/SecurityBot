@@ -12,7 +12,6 @@ namespace Security_Bot
 {
 	public class Program
 	{
-		public DiscordSocketClient _client;
 		public readonly Bot bot;
 		public const string kCfgFile = "SecBotConfig.json";
 		public static ReportHandler reportHandler;
