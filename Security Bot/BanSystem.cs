@@ -158,14 +158,14 @@ namespace Security_Bot
 				if (type == default(char)) 
 					return TimeSpan.MinValue;
 
-				span += fromChar(type, result);
+				span += FromChar(type, result);
 			}
 
 			return span;
 		}
 
 
-		private static TimeSpan fromChar(char c, int duration)
+		private static TimeSpan FromChar(char c, int duration)
 		{
 			switch (c)
 			{
