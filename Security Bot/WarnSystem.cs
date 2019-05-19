@@ -49,11 +49,28 @@ namespace Security_Bot
 				if (name.Contains("!"))
 					name = name.Replace("!", "");
 			}
-			IEnumerable<IGuildUser> users = context.Guild.GetUsersAsync(CacheMode.CacheOnly).Result.Where(u => ulong.TryParse(name, out ulong result) ? u.Id == result : u.Username == name);
+			IEnumerable<IGuildUser> users = (await context.Guild.GetUsersAsync(CacheMode.CacheOnly)).Where(u => ulong.TryParse(name, out ulong result) ? u.Id == result : u.Username == name);
 			IGuildUser usr = users.OrderBy(u => u.Username.Length).First();
 			
 			// await context.Channel.SendMessageAsync(usr.Username);
-			
+			if (reason.Contains("[1]"))
+				reason = "Rule 1 - Cheating or Glitching.";
+			if (reason.Contains("[2]"))
+				reason = "Rule 2 - Teaming";
+			if (reason.Contains("[3]"))
+				reason = "Rule 3 - Ear Rape/Micspam";
+			if (reason.Contains("[4]"))
+				reason = "Rule 4 - Derogatory / Racist / Hateful language";
+			if (reason.Contains("[5]"))
+				reason = "Rule 5 - Camping";
+			if (reason.Contains("[6]"))
+				reason = "Rule 6 - NSFW Music or Media.";
+			if (reason.Contains("[7]"))
+				reason = "Rule 7 - Harrassment";
+			if (reason.Contains("[8]"))
+				reason = "Rule 8 - Team killing";
+			if (reason.Contains("[9]"))
+				reason = "Rule 9 - Ghosting";
 
 			coll.Add("username", usr.Username);
 			coll.Add("steamid64", usr.Username);
@@ -142,8 +159,8 @@ namespace Security_Bot
 					reason = "Rule 8 - Team killing";
 				if (reason.Contains("[9]"))
 					reason = "Rule 9 - Ghosting";
-				
-				var chan = context.Guild.GetTextChannelAsync(program.Config.BotCommandId).Result;
+
+				var chan = await context.Guild.GetTextChannelAsync(program.Config.BotCommandId);
 				await chan.SendMessageAsync("+pbc " + args[1] + " 10 " + "You have been warned for breaking rule " +
 				                            reason +
 				                            " please review the rules and refrain from breaking more in the future.");

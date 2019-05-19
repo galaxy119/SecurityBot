@@ -79,7 +79,7 @@ namespace Security_Bot
 			coll.Add("username", player.personaname);
 			await Upload(coll, out string response, "http://joker.hivehosted.com/Bans/BanLogs.php");
 			await context.Channel.SendMessageAsync(response);
-			var chan = context.Guild.GetTextChannelAsync(program.Config.BotCommandId).Result;
+			var chan = await context.Guild.GetTextChannelAsync(program.Config.BotCommandId);
 			
 			await chan.SendMessageAsync("+kick " + args[1]);
 			await chan.SendMessageAsync("-kick " + args[1]);
@@ -92,10 +92,7 @@ namespace Security_Bot
 			//await context.Channel.SendMessageAsync(Convert.ToString(args.Length));
 			if (args.Length < 2) return;
 			TimeSpan span;
-			if (kick)
-				span = TimeSpan.Zero;
-			else
-				span = TimeSpan.FromDays(18250);
+			span = kick ? TimeSpan.Zero : TimeSpan.FromDays(18250);
 
 			string[] reasonarray = args.Where(p => p != args[0] && p != args[1]).ToArray();
 			string reason = string.Join(' ', reasonarray);
