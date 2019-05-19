@@ -21,7 +21,11 @@ namespace Security_Bot
 			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			// await context.Channel.SendMessageAsync(Convert.ToString(args.Length));
 			if (args.Length < 2) return;
-			if (args[1].Length != 17 || !long.TryParse(args[1], out long l)) return;
+			if (args[1].Length != 17 || !long.TryParse(args[1], out long l))
+			{
+				await context.Channel.SendMessageAsync("Invalid SteamID.");
+				return;
+			}
 			if (args[2].ToUpper() == "PERM")
 				span = TimeSpan.FromDays(18250);
 			else
