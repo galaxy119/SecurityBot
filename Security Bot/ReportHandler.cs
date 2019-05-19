@@ -14,13 +14,13 @@ namespace Security_Bot
 {
 	public class ReportHandler
 	{
-		private readonly Program program;
+		private static Program _program;
 		private readonly WebClient client;
 		private const string kReportURL = "https://staff.scpslgame.com/api/rest/reportcheater.php";
 
 		public ReportHandler(Program program)
 		{
-			this.program = program;
+			_program = program;
 			client = new WebClient();
 		}
 
@@ -28,10 +28,11 @@ namespace Security_Bot
 		{
 			NameValueCollection collection = new NameValueCollection
 			{
-				{ "serverhostkey", program.Config.ReportKey },
+				{ "serverhostkey", _program.Config.ReportKey },
 				{ "cheatdescription", reason },
 				{ "serverhostprooflink", proof },
-				{ "serverhoststeamid", steamId64 }
+				{ "serverhoststeamid", steamId64 },
+				{ "test", "true" }
 			};
 			byte[] response = await client.UploadValuesTaskAsync(kReportURL, collection);
 			
@@ -41,10 +42,10 @@ namespace Security_Bot
 		public static async Task<string> ReportPlayer(ICommandContext context, string server, string playername, string reason)
 		{
 			IUser reporter = context.Message.Author;
-			string message = "<@&540272592167370764> A player report has been filed! \n" + "Reporter: " + reporter.Username + "\n" +
+			string message = "<@&" + _program.Config.ScpStaffId + "> A player report has been filed! \n" + "Reporter: " + reporter.Username + "\n" +
 			                 "Reportee: " + playername + "\n" + "Server: Playground " + server + "\n" + "Reason: " +
 			                 reason;
-			ITextChannel chan = context.Guild.GetTextChannelAsync(533883038468145154).Result;
+			ITextChannel chan = context.Guild.GetTextChannelAsync(_program.Config.PlayerReportId).Result;
 			
 			await chan.SendMessageAsync(message);
 
@@ -54,9 +55,10 @@ namespace Security_Bot
 		public static async Task<string> ReportBug(ICommandContext context, string server, string description)
 		{
 			IUser reporter = context.Message.Author;
-			string message = "<@&530252029361127439> A bug report has been filed! \n" + "Reporter: " + reporter.Username + "\n" +
+			string message = "<@&" + _program.Config.ServerManagerId + "> A bug report has been filed! \n" + "Reporter: " + reporter.Username + "\n" +
 			                 "Server: Playground " + server + "\n" + "Description: " + description;
-			ITextChannel chan = context.Guild.GetTextChannelAsync(526314073491767303).Result;
+
+			ITextChannel chan = context.Guild.GetTextChannelAsync(_program.Config.BugReportId).Result;
 
 			await chan.SendMessageAsync(message);
 
@@ -67,8 +69,9 @@ namespace Security_Bot
 		public static async Task<string> Recommendations(ICommandContext context, string description)
 		{
 			IUser reporter = context.Message.Author;
-			string message = "<@&530252029361127439> A recommendation has been submitted! \n" + "Reporter: " + reporter.Username + "\n" + "Description: " + description;
-			ITextChannel chan = context.Guild.GetTextChannelAsync(526450520869699584).Result;
+			string message = "<@&" + _program.Config.ServerManagerId + "> A recommendation has been submitted! \n" + "Reporter: " + reporter.Username + "\n" + "Description: " + description;
+			
+			ITextChannel chan = context.Guild.GetTextChannelAsync(_program.Config.RecommendationId).Result;
 
 			await chan.SendMessageAsync(message);
 

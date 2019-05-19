@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
 using System.Net;
@@ -6,14 +7,15 @@ using System.Text;
 using Discord.Commands;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
+using Discord;
 
 namespace Security_Bot
 {
 	public class BanSystem
 	{
 		private static WebClient _webClient;
-
-		public static async Task DoDiscordBanCommand(CommandContext context)
+		
+		public static async Task DoServerBanCommand(CommandContext context, Program program)
 		{
 			TimeSpan span;
 			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
@@ -31,6 +33,7 @@ namespace Security_Bot
 				if (span.Ticks <= 0)
 				{
 					await context.Channel.SendMessageAsync("Error while parsing the ban duration.");
+					await context.Channel.SendMessageAsync(span.ToString());
 					return;
 				}
 			}
@@ -72,11 +75,78 @@ namespace Security_Bot
 			coll.Add("username", player.personaname);
 			await Upload(coll, out string response, "http://joker.hivehosted.com/Bans/BanLogs.php");
 			await context.Channel.SendMessageAsync(response);
-			var chan = context.Guild.GetTextChannelAsync(516375236212555779).Result;
+			var chan = context.Guild.GetTextChannelAsync(program.Config.BotCommandId).Result;
 			
 			await chan.SendMessageAsync("+kick " + args[1]);
 			await chan.SendMessageAsync("-kick " + args[1]);
 			await chan.SendMessageAsync(".kick " + args[1]);
+		}
+
+		public static async Task DoDiscordBanCommand(CommandContext context, Program program, bool kick = false, bool softban = false)
+		{
+			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
+			//await context.Channel.SendMessageAsync(Convert.ToString(args.Length));
+			if (args.Length < 2) return;
+			TimeSpan span;
+			if (kick)
+				span = TimeSpan.Zero;
+			else
+				span = TimeSpan.FromDays(18250);
+
+			string[] reasonarray = args.Where(p => p != args[0] && p != args[1]).ToArray();
+			string reason = string.Join(' ', reasonarray);
+			string name = args[1];
+			
+			if (args[1].Contains("@"))
+			{
+				name = args[1].Replace("@", "");
+				name = name.Replace("<", "");
+				name = name.Replace(">", "");
+				if (name.Contains("!"))
+					name = name.Replace("!", "");
+			}
+			
+			IEnumerable<IGuildUser> users = context.Guild.GetUsersAsync(CacheMode.CacheOnly).Result.Where(u => ulong.TryParse(name, out ulong result) ? u.Id == result : u.Username == name);
+			IGuildUser usr = users.OrderBy(u => u.Username.Length).First();
+			NameValueCollection coll = new NameValueCollection();
+
+			coll.Add("apikey", "4qj3Mk0e49J78W3IU$9&0yQ7z48x1420R6tST126d3oLX76449030756o1268922");
+			coll.Add("server", "N/A");
+			coll.Add("timestamp",
+				DateTime.UtcNow.Year.ToString("0000") + "-" + DateTime.UtcNow.Month.ToString("00") + "-" +
+				DateTime.UtcNow.Day.ToString("00") + "T" + DateTime.UtcNow.Hour.ToString("00") + ":" +
+				DateTime.UtcNow.Minute.ToString("00") + ":" + DateTime.UtcNow.Second + "." +
+				DateTime.UtcNow.Millisecond.ToString("000"));
+			coll.Add("starttime", Convert.ToString(DateTime.UtcNow.Ticks));
+			coll.Add("expiretime", Convert.ToString(span.Ticks));
+			coll.Add("color", (span.Days > 365) ? "16580608" : "1208580");
+			coll.Add("admin", context.Message.Author.Username);
+			coll.Add("steamid64", usr.Username);
+			coll.Add("duration", "Permanent");
+			coll.Add("username", usr.Username);
+			coll.Add("reason", reason);
+			await Upload(coll, out string response, "http://joker.hivehosted.com/DiscordBans/BanLogs.php");
+			await context.Channel.SendMessageAsync(response);
+
+			if (kick)
+			{
+				await usr.KickAsync();
+				await usr.SendMessageAsync("You have been kicked from Joker's Playground! \n" + "Staff issuing kick: " +
+				                           context.Message.Author.Username + "\n" + "Reason: " + reason);
+			}
+			else if (softban)
+			{
+				await context.Guild.AddBanAsync(usr.Id, 7, reason);
+				await context.Guild.RemoveBanAsync(usr.Id);
+				await usr.SendMessageAsync("You have been kicked from Joker's Playground! \n" + "Staff issuing kick: " +
+				                           context.Message.Author.Username + "\n" + "Reason: " + reason);
+			}
+			else
+			{
+				await context.Guild.AddBanAsync(usr.Id, 7, reason);
+				await usr.SendMessageAsync("You have been banned from Joker's Playground! \n" + "Staff issuing ban: " +
+				                           context.Message.Author.Username + "\n" + "Reason: " + reason);
+			}
 		}
 
 		private static Task DownloadwebClient(out string result, string url)
@@ -84,9 +154,7 @@ namespace Security_Bot
 			using (var webClient = new WebClient())
 			{
 				webClient.Headers[HttpRequestHeader.UserAgent] = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/535.2 (KHTML, like Gecko) Chrome/15.0.874.121 Safari/535.2";
-				Console.WriteLine("client download");
 				result = webClient.DownloadString(url);
-				Console.WriteLine("Downloaded");
 			}
 			return Task.FromResult(1);
 		}
@@ -95,14 +163,31 @@ namespace Security_Bot
 		{
 			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length != 2) return;
-			if (!long.TryParse(args[1], out long steamid64) || args[1].Length != 17) return;
 			NameValueCollection collection = new NameValueCollection
 			{
 				{ "apikey", "vyJCxUBi9D785DuXxAVoDuD1llZ5jPO4T4YdvfLYNk2Qe2wyHNZVZOJoQ5rXTE97" },
 				{ "steamid64", args[1] }
 			};
+			if (args[1].Contains("@"))
+			{
+				string name;
+				name = args[1].Replace("@", "");
+				name = name.Replace("<", "");
+				name = name.Replace(">", "");
+				if (name.Contains("!"))
+					name = name.Replace("!", "");
+				IEnumerable<IGuildUser> users = context.Guild.GetUsersAsync(CacheMode.CacheOnly).Result.Where(u =>
+					ulong.TryParse(name, out ulong result) ? u.Id == result : u.Username == name);
+				IGuildUser user = users.OrderBy(u => u.Username.Length).First();
+				collection.Remove("steamid64");
+				collection.Add("steamid64", user.Username);
+			}
 			if (_webClient == null) _webClient = new WebClient();
-			await Upload(collection, out string response, "http://joker.hivehosted.com/Bans/GetBanInfo.php");
+			string url = "http://joker.hivehosted.com/Bans/GetBanInfo.php";
+			if (!long.TryParse(args[1], out long _) || args[1].Length != 17)
+				url = "http://joker.hivehosted.com/DiscordBans/GetBanInfo.php";
+			
+			await Upload(collection, out string response, url);
 			await context.Channel.SendMessageAsync(response);
 		}
 
@@ -110,14 +195,33 @@ namespace Security_Bot
 		{
 			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length != 2) return;
-			if (!long.TryParse(args[1], out long steamid64) || args[1].Length != 17) return;
+			
 			NameValueCollection collection = new NameValueCollection
 			{
 				{ "apikey", "Ntba7mQeAyKRsoZs6qe85t37npzsyLUNPaUc6CRzKcNWgKUp470ja91DX7wioIUH" },
 				{ "steamid64", args[1] }
 			};
+			
+			if (args[1].Contains("@"))
+			{
+				string name;
+				name = args[1].Replace("@", "");
+				name = name.Replace("<", "");
+				name = name.Replace(">", "");
+				if (name.Contains("!"))
+					name = name.Replace("!", "");
+				IEnumerable<IGuildUser> users = context.Guild.GetUsersAsync(CacheMode.CacheOnly).Result.Where(u =>
+					ulong.TryParse(name, out ulong result) ? u.Id == result : u.Username == name);
+				IGuildUser user = users.OrderBy(u => u.Username.Length).First();
+				collection.Remove("steamid64");
+				collection.Add("steamid64", user.Username);
+			}
+			
 			if (_webClient == null) _webClient = new WebClient();
-			await Upload(collection, out string response, "http://joker.hivehosted.com/Bans/RevokeBan.php");
+			string url = "http://joker.hivehosted.com/Bans/RevokeBan.php";
+			if (!long.TryParse(args[1], out long _) || args[1].Length != 17)
+				url = "http://joker.hivehosted.com/DiscordBans/RevokeBan.php";
+			await Upload(collection, out string response, url);
 			await context.Channel.SendMessageAsync(response);
 		}
 
@@ -129,10 +233,9 @@ namespace Security_Bot
 			string[] args = context.Message.Content.Split(new string[] {" "}, StringSplitOptions.None);
 			if (args.Length <= 2) return;
 			string steamid = args[1];
-			if (!ulong.TryParse(steamid, out ulong steamid64ulong) || steamid.Length != 17) return;
-			string reason = args.Where(p => ((p != program.Config.BotPrefix + "reason") && (p != steamid))).Aggregate("", (current, str) => current + str + " ");
-
-			Console.WriteLine(reason);
+			if (!ulong.TryParse(steamid, out ulong _) || steamid.Length != 17) return;
+			string reason = args.Where(p => p != program.Config.BotPrefix + "reason" && p != steamid).Aggregate("", (current, str) => current + str + " ");
+			
 			NameValueCollection col = new NameValueCollection
 			{
 				{"apikey", "npN8L6plU6FtxK8KzmXd0XoM6TqIEilibHZqreIK0lXuf6KJ8O9G2o6Wn6t1emtp"},
@@ -163,7 +266,6 @@ namespace Security_Bot
 					return TimeSpan.MinValue;
 
 				char type = s.ToCharArray().FirstOrDefault(char.IsLetter);
-				Console.WriteLine(type + "  " + digits);
 				if (type == default(char)) 
 					return TimeSpan.MinValue;
 

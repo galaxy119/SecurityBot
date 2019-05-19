@@ -60,13 +60,35 @@ namespace Security_Bot
 		public string BotToken { get; set; }
 		public ulong ReportRoleId { get; set; }
 		public string ReportKey { get; set; }
+		public ulong PlayerReportId { get; set; }
+		public ulong RecommendationId { get; set; }
+		public ulong BugReportId { get; set; }
+		public ulong GmodId { get; set; }
+		public ulong DiscStaffId { get; set; }
+		public ulong ScpStaffId { get; set; }
+		public ulong EthicsId { get; set; }
+		public ulong CommunityManagerId { get; set; }
+		public ulong ServerManagerId { get; set; }
+		public ulong BotCommandId { get; set; }
 
 		public static readonly Config Default = new Config
 		{
 			BotToken = "",
 			BotPrefix = "~",
 			ReportRoleId = 0,
-			ReportKey = ""
+			ReportKey = "",
+			ServerManagerId = 0,
+			CommunityManagerId = 0,
+			EthicsId = 0,
+			ScpStaffId = 0,
+			DiscStaffId = 0,
+			GmodId = 0,
+			BugReportId = 0,
+			PlayerReportId = 0,
+			RecommendationId = 0,
+			BotCommandId = 0
 		};
+
+		
 	}
 }
